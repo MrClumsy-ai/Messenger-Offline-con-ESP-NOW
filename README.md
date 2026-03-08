@@ -1,3 +1,7 @@
+# Diagrama esquematico
+
+![diagrama](./media/diagrama.png) 
+
 # Requerimientos
 
 Este proyecto es funcional en linux (Debian 13)
