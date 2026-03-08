@@ -37,6 +37,8 @@ En nuestro caso, el address fue `0x3C`
 | SDA    | G21     |
 | SCL    | G22     |
 
+![diagrama](../media/display-demo.png)
+
 5. Una vez que tenemos el address del display y las conexiones al ESP-32,
    vamos a `display-ESP/` y ejecutamos:
 

@@ -12,7 +12,7 @@ placa 2 esta en `ttyUSB1`.
 
 2. Conectar cada ESP32 de la siguiente manera
 
-![TINKERCAD](./circuito.png)
+![TINKERCAD](../media/broadcast-demo.png)
 
 3. Ejecutar el siguiente comando desde `esp-now-multi/`:
 
