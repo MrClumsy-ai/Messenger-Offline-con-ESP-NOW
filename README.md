@@ -1,3 +1,9 @@
+# Descripcion
+
+Un sistema de comunicacion tipo "walkie-talkie" de texto entre varios ESP32
+que funciona sin necesidad de router ni internet, con un alcance de hasta
+200-400 metros.
+
 # Diagrama esquematico
 
 ![diagrama](./media/diagrama.png)
@@ -10,16 +16,19 @@ Este proyecto es funcional en linux (Debian 13)
 
 - 2 x ESP-32 (de 38 pines) (utilizados en el desarrollo: [UNIT ELECTRONICS ESP32 38 Pines ESP WROOM 32](https://www.amazon.com.mx/dp/B08V517B56?ref=ppx_yo2ov_dt_b_fed_asin_title) )
 - 2 x I2C OLED displays (utilizados en el desarrollo: [UNIT ELECTRONICS Display OLED Blanco 128x64 0.96 I2C SSD1306](https://www.amazon.com.mx/dp/B09MSV1BYF?ref=ppx_yo2ov_dt_b_fed_asin_title) )
+- ? x Protoboards
+- ? x Push-buttons
+- Cables jumper
 
 ## Arduino en la linea de comandos
 
-Instalar arduino junto con arduino-cli
+1. Instalar arduino junto con arduino-cli
 
 ```bash
 sudo apt-get install arduino arduino-cli
 ```
 
-Instalar el `core` de esp32
+2. Instalar el `core` de esp32
 
 ```bash
 arduino-cli core install esp32:esp32
@@ -33,4 +42,12 @@ estar en `/dev/ttyUSB0`, asi que eso es lo que pondremos en el archivo de
 ```yaml
 default_fqbn: esp32:esp32:esp32
 default_port: /dev/ttyUSB0
+```
+
+3. Instalar las librerias
+
+```bash
+arduino-cli lib install "WiFi"
+arduino-cli lib install "Adafruit GFX Library"
+arduino-cli lib install "Adafruit SSD1306"
 ```
