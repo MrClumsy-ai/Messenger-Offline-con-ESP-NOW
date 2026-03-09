@@ -57,3 +57,8 @@ arduino-cli lib install "WiFi"
 arduino-cli lib install "Adafruit GFX Library"
 arduino-cli lib install "Adafruit SSD1306"
 ```
+
+4. Anotar los MAC addresses (ver 01-get-MAC), en nuestro caso, fueron:
+
+- Placa 1: 88:57:21:79:C1:3C
+- Placa 2: 88:57:21:79:81:04

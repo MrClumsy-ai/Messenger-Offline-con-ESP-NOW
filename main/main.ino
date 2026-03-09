@@ -18,6 +18,9 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 uint8_t menu_selected = 0;
 bool submit_pressed = false;
 
+const uint8_t espAddr[] = { 0x88, 0x57, 0x21, 0x79, 0xC1, 0x3C };  // placa 1
+// const uint8_t espAddr[] = { 0x88, 0x57, 0x21, 0x79, 0x81, 0x04 };  // placa 2
+
 void formatMacAddress(const uint8_t *macAddr, char *buffer, int maxLen) {
   snprintf(buffer, maxLen, "%02x:%02x:%02x:%02x:%02x:%02x", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
 }
@@ -60,14 +63,20 @@ void sentCallback(const esp_now_send_info_t *tx_info, esp_now_send_status_t stat
   Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
 }
 
-void broadcast(const String &message) {
-  uint8_t broadcastAddress[] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
-  esp_now_peer_info_t peerInfo = {};
-  memcpy(&peerInfo.peer_addr, broadcastAddress, 6);
-  if (!esp_now_is_peer_exist(broadcastAddress)) {
-    esp_now_add_peer(&peerInfo);
+void sendToPeer(const String &message, const uint8_t *peerAddress) {
+  // if peer hasn't been added, add it
+  if (!esp_now_is_peer_exist(peerAddress)) {
+    esp_now_peer_info_t peerInfo = {};
+    memcpy(&peerInfo.peer_addr, peerAddress, 6);
+    peerInfo.channel = 0;  // wifi channel
+    peerInfo.encrypt = false;
+    esp_err_t addStatus = esp_now_add_peer(&peerInfo);
+    if (addStatus != ESP_OK) {
+      Serial.println("FAILED TO ADD PEER");
+      return;
+    }
   }
-  esp_err_t result = esp_now_send(broadcastAddress, (const uint8_t *)message.c_str(), message.length());
+  esp_err_t result = esp_now_send(peerAddress, (const uint8_t *)message.c_str(), message.length());
   switch (result) {
     case ESP_OK:
       Serial.println("broadcast message success");
@@ -129,7 +138,6 @@ void setup() {
   WiFi.disconnect();
   if (esp_now_init() == ESP_OK) {
     Serial.println("ESP-NOW init success");
-    // TODO:
     esp_now_register_recv_cb(recieveCallback);
     esp_now_register_send_cb(sentCallback);
   } else {
@@ -180,7 +188,7 @@ void loop() {
     display.print(getMainSelected());
     display.display();
     delay(1500);
-    broadcast(getMainSelected());
+    sendToPeer(getMainSelected(), espAddr);
     displayMainMenu();
   }
 }
