@@ -6,7 +6,6 @@ que funciona sin necesidad de router ni internet, con un alcance de hasta
 
 # Diagrama esquematico
 
-TODO: cambiar de orientacion la pantalla
 ![diagrama](./media/diagrama.png)
 
 # Requerimientos
