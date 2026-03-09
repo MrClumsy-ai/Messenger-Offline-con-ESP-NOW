@@ -8,6 +8,12 @@ que funciona sin necesidad de router ni internet, con un alcance de hasta
 
 ![diagrama](./media/diagrama.png)
 
+# Uso
+
+- Boton rojo (boton 1): mueve el cursor hacia arriba
+- Boton verde (boton 2): mueve el cursor hacia abajo
+- Boton azul (boton 3): envia la opcion del menu
+
 # Requerimientos
 
 Este proyecto es funcional en linux (Debian 13)
