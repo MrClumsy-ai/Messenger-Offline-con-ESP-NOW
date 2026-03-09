@@ -15,7 +15,7 @@
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-uint8_t menu_selected = 1;
+uint8_t menu_selected = 0;
 bool submit_pressed = false;
 
 void formatMacAddress(const uint8_t *macAddr, char *buffer, int maxLen) {
@@ -34,15 +34,19 @@ void recieveCallback(const esp_now_recv_info_t *esp_now_info, const uint8_t *dat
   Serial.printf("Received message from: %s - %s\n", macStr, buffer);
   display.clearDisplay();
   display.setCursor(10, 20);
-  if (strcmp("on", buffer) == 0) {
-    display.println("foo");
-    Serial.println("foo");
+  if (strcmp("a", buffer) == 0) {
+    display.println("got a");
+    Serial.println("got a");
+  } else if (strcmp("b", buffer) == 0) {
+    display.println("got b");
+    Serial.println("got b");
   } else {
-    display.println("bar");
-    Serial.println("bar");
+    display.println("got c");
+    Serial.println("got c");
   }
   display.display();
-  delay(500);  // prevent multiple triggers
+  delay(1000);  // prevent multiple triggers
+  displayMainMenu();
 }
 
 void sentCallback(const esp_now_send_info_t *tx_info, esp_now_send_status_t status) {
@@ -90,49 +94,29 @@ void broadcast(const String &message) {
 }
 
 void displayMainMenu() {
+  const int line_height = 20;
+  display.clearDisplay();
+  display.setTextSize(2);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(20, 0);
+  display.println("a");
+  display.setCursor(20, 20);
+  display.println("b");
+  display.setCursor(20, 40);
+  display.println("c");
+  display.setCursor(0, 20 * menu_selected);
+  display.println(">");
+  display.display();
+}
+
+String getMainSelected() {
   switch (menu_selected) {
+    case 0:
+      return "a";
     case 1:
-      display.clearDisplay();
-      display.setTextSize(2);
-      display.setTextColor(SSD1306_WHITE);
-      display.setCursor(0, 0);
-      display.println(">");
-      display.setCursor(20, 0);
-      display.println("a");
-      display.setCursor(20, 20);
-      display.println("b");
-      display.setCursor(20, 40);
-      display.println("c");
-      display.display();
-      break;
+      return "b";
     case 2:
-      display.clearDisplay();
-      display.setTextSize(2);
-      display.setTextColor(SSD1306_WHITE);
-      display.setCursor(20, 0);
-      display.println("a");
-      display.setCursor(0, 20);
-      display.println(">");
-      display.setCursor(20, 20);
-      display.println("b");
-      display.setCursor(20, 40);
-      display.println("c");
-      display.display();
-      break;
-    case 3:
-      display.clearDisplay();
-      display.setTextSize(2);
-      display.setTextColor(SSD1306_WHITE);
-      display.setCursor(20, 0);
-      display.println("a");
-      display.setCursor(20, 20);
-      display.println("b");
-      display.setCursor(0, 40);
-      display.println(">");
-      display.setCursor(20, 40);
-      display.println("c");
-      display.display();
-      break;
+      return "c";
   }
 }
 
@@ -157,6 +141,7 @@ void setup() {
   pinMode(BTN_DOWN, INPUT_PULLUP);
   Wire.begin(21, 22);  // SDA, SCL
   display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
+  display.setRotation(2);
   display.clearDisplay();
   display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
@@ -173,14 +158,14 @@ void setup() {
 
 void loop() {
   if (digitalRead(BTN_UP) == LOW) {
-    if (menu_selected > 1) {
+    if (menu_selected > 0) {
       menu_selected--;
     }
     displayMainMenu();
     delay(200);
   }
   if (digitalRead(BTN_DOWN) == LOW) {
-    if (menu_selected < 3) {
+    if (menu_selected < 2) {
       menu_selected++;
     }
     displayMainMenu();
@@ -188,13 +173,14 @@ void loop() {
   }
   if (digitalRead(BTN_SUBMIT) == LOW) {
     display.clearDisplay();
-    display.setTextSize(1);
+    display.setTextSize(2);
     display.setTextColor(SSD1306_WHITE);
     display.setCursor(20, 20);
-    display.printf("menu selected is: %d", menu_selected);
+    display.print("sent: ");
+    display.print(getMainSelected());
     display.display();
     delay(1500);
-    menu_selected = 1;
+    broadcast(getMainSelected());
     displayMainMenu();
   }
 }
