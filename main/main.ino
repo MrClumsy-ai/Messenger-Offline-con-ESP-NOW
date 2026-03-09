@@ -5,8 +5,9 @@
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
 
-#define BUTTON_1 5
-#define BUTTON_2 19
+#define BTN_UP 5
+#define BTN_DOWN 19
+#define BTN_SUBMIT 15
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 #define OLED_RESET -1
@@ -14,9 +15,8 @@
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 
-bool good_msg = false;
-bool btn_1_pressed = false;
-bool btn_2_pressed = false;
+uint8_t menu_selected = 1;
+bool submit_pressed = false;
 
 void formatMacAddress(const uint8_t *macAddr, char *buffer, int maxLen) {
   snprintf(buffer, maxLen, "%02x:%02x:%02x:%02x:%02x:%02x", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
@@ -35,11 +35,9 @@ void recieveCallback(const esp_now_recv_info_t *esp_now_info, const uint8_t *dat
   display.clearDisplay();
   display.setCursor(10, 20);
   if (strcmp("on", buffer) == 0) {
-    // good_msg = true;
     display.println("foo");
     Serial.println("foo");
   } else {
-    // good_msg = false;
     display.println("bar");
     Serial.println("bar");
   }
@@ -91,6 +89,53 @@ void broadcast(const String &message) {
   }
 }
 
+void displayMainMenu() {
+  switch (menu_selected) {
+    case 1:
+      display.clearDisplay();
+      display.setTextSize(2);
+      display.setTextColor(SSD1306_WHITE);
+      display.setCursor(0, 0);
+      display.println(">");
+      display.setCursor(20, 0);
+      display.println("a");
+      display.setCursor(20, 20);
+      display.println("b");
+      display.setCursor(20, 40);
+      display.println("c");
+      display.display();
+      break;
+    case 2:
+      display.clearDisplay();
+      display.setTextSize(2);
+      display.setTextColor(SSD1306_WHITE);
+      display.setCursor(20, 0);
+      display.println("a");
+      display.setCursor(0, 20);
+      display.println(">");
+      display.setCursor(20, 20);
+      display.println("b");
+      display.setCursor(20, 40);
+      display.println("c");
+      display.display();
+      break;
+    case 3:
+      display.clearDisplay();
+      display.setTextSize(2);
+      display.setTextColor(SSD1306_WHITE);
+      display.setCursor(20, 0);
+      display.println("a");
+      display.setCursor(20, 20);
+      display.println("b");
+      display.setCursor(0, 40);
+      display.println(">");
+      display.setCursor(20, 40);
+      display.println("c");
+      display.display();
+      break;
+  }
+}
+
 void setup() {
   Serial.begin(115200);
   delay(1000);
@@ -108,45 +153,48 @@ void setup() {
     delay(3000);
     ESP.restart();
   }
-  pinMode(BUTTON_1, INPUT_PULLUP);
-  pinMode(BUTTON_2, INPUT_PULLUP);
+  pinMode(BTN_UP, INPUT_PULLUP);
+  pinMode(BTN_DOWN, INPUT_PULLUP);
   Wire.begin(21, 22);  // SDA, SCL
   display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
   display.clearDisplay();
-  display.setTextSize(3);
+  display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(">");
+  display.setCursor(20, 0);
+  display.println("a");
   display.setCursor(20, 20);
-  display.println("READY");
+  display.println("b");
+  display.setCursor(20, 40);
+  display.println("c");
   display.display();
 }
 
 void loop() {
-  if (digitalRead(BUTTON_1) == LOW) {
-    if (!btn_1_pressed) {
-      btn_1_pressed = true;
-      display.clearDisplay();
-      display.setCursor(10, 20);
-      display.println("foo");
-      Serial.println("foo");
-      broadcast("on");
-      display.display();
+  if (digitalRead(BTN_UP) == LOW) {
+    if (menu_selected > 1) {
+      menu_selected--;
     }
-    delay(500);  // prevent multiple triggers
-  } else {
-    btn_1_pressed = false;
+    displayMainMenu();
+    delay(200);
   }
-  if (digitalRead(BUTTON_2) == LOW) {
-    if (!btn_2_pressed) {
-      btn_2_pressed = true;
-      display.clearDisplay();
-      display.setCursor(10, 20);
-      display.println("bar");
-      Serial.println("bar");
-      broadcast("off");
-      display.display();
+  if (digitalRead(BTN_DOWN) == LOW) {
+    if (menu_selected < 3) {
+      menu_selected++;
     }
-    delay(500);  // prevent multiple triggers
-  } else {
-    btn_2_pressed = false;
+    displayMainMenu();
+    delay(200);
+  }
+  if (digitalRead(BTN_SUBMIT) == LOW) {
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(20, 20);
+    display.printf("menu selected is: %d", menu_selected);
+    display.display();
+    delay(1500);
+    menu_selected = 1;
+    displayMainMenu();
   }
 }
