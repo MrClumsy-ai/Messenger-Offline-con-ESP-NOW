@@ -1,3 +1,11 @@
+# Requerimientos
+
+- Libreria WiFi
+
+```bash
+arduino-cli lib install "WiFi"
+```
+
 # Instrucciones
 
 1. Conectar la primer placa ESP32 a la computadora y emitir el siguiente comando:

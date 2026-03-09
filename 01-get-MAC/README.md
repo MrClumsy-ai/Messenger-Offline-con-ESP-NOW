@@ -1,3 +1,11 @@
+# Requerimientos
+
+- Libreria WiFi
+
+```bash
+arduino-cli lib install "WiFi"
+```
+
 # Instrucciones
 
 1. Compilar y subir el codigo al ESP-32
