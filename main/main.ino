@@ -43,14 +43,6 @@ Menu *menuSelected = &mainMenu;
 std::vector<String> them;
 std::vector<String> us;
 
-void setMenu(const String opts[], uint8_t paddingTop, uint8_t fontSize) {
-  display.setTextSize(fontSize);
-  for (int i = 0; i < sizeof(&opts) - 1; i++) {
-    display.setCursor(10, i * fontSize * 10 + paddingTop);
-    display.println(opts[i]);
-  }
-}
-
 void displayCurrMenu() {
   const uint8_t fontSize = 1;
   const uint8_t paddingLeft = 10;
@@ -72,20 +64,6 @@ void displayCurrMenu() {
   display.println();
   // TODO
   menuSelected->show(20, fontSize);
-}
-
-String getMainSelected() {
-  switch (menu_selected) {
-    case 0:
-      us.push_back("a");
-      return "a";
-    case 1:
-      us.push_back("b");
-      return "b";
-    case 2:
-      us.push_back("c");
-      return "c";
-  }
 }
 
 void setup() {
