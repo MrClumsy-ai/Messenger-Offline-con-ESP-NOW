@@ -22,48 +22,50 @@ bool submit_pressed = false;
 struct Menu;
 
 struct MenuOption {
+  const char *title;
   const bool isDir;
   union {
     const char *command;
     const Menu *subDir;
   };
-  MenuOption(const char *cmd) : isDir(false), command(cmd) {}
-  MenuOption(const Menu *menu) : isDir(true), subDir(menu) {}
+  // puede ser o un cmd, o un dir (con titulo)
+  MenuOption(const char *cmd) : title(cmd), isDir(false), command(cmd) {}
+  MenuOption(const char *title, const Menu *menu) : title(title), isDir(true), subDir(menu) {}
 };
 
 
 struct Menu {
+  const char *title;
   int selected;
+  const Menu *parent;
   const int optsLen;
-  const char *const *opts;
-  const MenuOption *data;
+  const MenuOption *opts;
   void show(uint8_t padTop = 0, uint8_t fontSize = 1) {
     display.setTextSize(fontSize);
     display.setCursor(0, selected * 10 * fontSize + padTop);
     display.println(">");
     for (int i = 0; i < optsLen; i++) {
       display.setCursor(10, i * fontSize * 10 + padTop);
-      display.println(opts[i]);
+      display.println(opts[i].title);
     }
     display.display();
   }
-  bool isDir(int idx) const {
-    return data[idx].isDir;
-  }
-  const char *getCmd(int idx) const {
-    return data[idx].command;
-  }
-  const Menu *getSubDir(int idx) const {
-    return data[idx].subDir;
-  }
+  Menu(const char *title, const Menu *parent, const int optsLen, const MenuOption *opts)
+    : title(title), selected(0), parent(parent), optsLen(optsLen), opts(opts) {}
 };
 
-extern Menu ledMenu;
-extern Menu settingsMenu;
 
-const char *mainMenuOpts[] = { "a", "b", "c" };
-MenuOption mainOptsData[] = { MenuOption("a"), MenuOption(&ledMenu), MenuOption(&settingsMenu) };
-Menu mainMenu = { 0, 3, mainMenuOpts, mainOptsData };
+extern const Menu ledMenu;
+extern const Menu settingsMenu;
+
+MenuOption mainOpts[] = { MenuOption("a"), MenuOption("led", &ledMenu), MenuOption("settings", &settingsMenu) };
+Menu mainMenu("Main menu", nullptr, 3, mainOpts);
+
+MenuOption ledOpts[] = { MenuOption("1"), MenuOption("2"), MenuOption("3") };
+const Menu ledMenu("Led menu", &mainMenu, 3, ledOpts);
+
+MenuOption settingsOpts[] = { MenuOption("a"), MenuOption("b"), MenuOption("c") };
+const Menu settingsMenu("Led menu", &mainMenu, 3, settingsOpts);
 
 Menu *menuSelected = &mainMenu;
 
@@ -221,8 +223,8 @@ void loop() {
     display.setTextSize(2);
     display.setCursor(20, 20);
     delay(200);
-    sendToPeer(menuSelected->opts[menuSelected->selected], espAddr);
-    us.push_back(menuSelected->opts[menuSelected->selected]);
+    sendToPeer(menuSelected->opts[menuSelected->selected].title, espAddr);
+    us.push_back(menuSelected->opts[menuSelected->selected].title);
     displayCurrMenu();
   }
 }
