@@ -26,11 +26,11 @@ struct MenuOption {
   const bool isDir;
   union {
     const char *command;
-    const Menu *subDir;
+    Menu *subDir;
   };
   // puede ser o un cmd, o un dir (con titulo)
   MenuOption(const char *cmd) : title(cmd), isDir(false), command(cmd) {}
-  MenuOption(const char *title, const Menu *menu) : title(title), isDir(true), subDir(menu) {}
+  MenuOption(const char *title, Menu *menu) : title(title), isDir(true), subDir(menu) {}
 };
 
 
@@ -54,9 +54,9 @@ struct Menu {
     : title(title), selected(0), parent(parent), optsLen(optsLen), opts(opts) {}
 };
 
-extern const Menu ledMenu;
-extern const Menu settingsMenu;
-extern const Menu emoticonsMenu;
+extern Menu ledMenu;
+extern Menu settingsMenu;
+extern Menu emoticonsMenu;
 
 MenuOption mainOpts[] = {
   MenuOption("emoticons", &emoticonsMenu),
@@ -72,21 +72,21 @@ MenuOption emoticonsOpts[] = {
   MenuOption(":/"),
   MenuOption(":p"),
 };
-const Menu emoticonsMenu("Emoticons", &mainMenu, sizeof(emoticonsOpts) / sizeof(MenuOption), emoticonsOpts);
+Menu emoticonsMenu("Emoticons", &mainMenu, sizeof(emoticonsOpts) / sizeof(MenuOption), emoticonsOpts);
 
 MenuOption ledOpts[] = {
   MenuOption("1"),
   MenuOption("2"),
   MenuOption("3")
 };
-const Menu ledMenu("Led menu", &mainMenu, sizeof(ledOpts) / sizeof(MenuOption), ledOpts);
+Menu ledMenu("Led menu", &mainMenu, sizeof(ledOpts) / sizeof(MenuOption), ledOpts);
 
 MenuOption settingsOpts[] = {
   MenuOption("a"),
   MenuOption("b"),
   MenuOption("c")
 };
-const Menu settingsMenu("Led menu", &mainMenu, sizeof(settingsOpts) / sizeof(MenuOption), settingsOpts);
+Menu settingsMenu("Led menu", &mainMenu, sizeof(settingsOpts) / sizeof(MenuOption), settingsOpts);
 
 Menu *menuSelected = &mainMenu;
 
@@ -232,6 +232,11 @@ void loop() {
     delay(200);
   }
   if (digitalRead(BTN_SUBMIT) == LOW) {
+    if (menuSelected->opts->isDir) {
+      menuSelected = menuSelected->opts->subDir;
+    } else {
+      // TODO
+    }
     display.clearDisplay();
     display.setTextSize(2);
     display.setCursor(20, 20);
