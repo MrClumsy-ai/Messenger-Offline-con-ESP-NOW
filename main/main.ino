@@ -54,7 +54,6 @@ struct Menu {
     : title(title), selected(0), parent(parent), optsLen(optsLen), opts(opts) {}
 };
 
-
 extern const Menu ledMenu;
 extern const Menu settingsMenu;
 
@@ -112,16 +111,7 @@ void recieveCallback(const esp_now_recv_info_t *esp_now_info, const uint8_t *dat
   them.push_back(String(buffer));
   display.clearDisplay();
   display.setCursor(10, 20);
-  if (strcmp("a", buffer) == 0) {
-    display.println("got a");
-    Serial.println("got a");
-  } else if (strcmp("b", buffer) == 0) {
-    display.println("got b");
-    Serial.println("got b");
-  } else {
-    display.println("got c");
-    Serial.println("got c");
-  }
+  display.println(them.back());
   display.display();
   delay(1000);  // prevent multiple triggers
   displayCurrMenu();
