@@ -62,8 +62,7 @@ void displayCurrMenu() {
     display.print(us.back());
   }
   display.println();
-  // TODO
-  menuSelected->show(20, fontSize);
+  menuSelected->show(2*lineHeight, fontSize);
 }
 
 void setup() {
