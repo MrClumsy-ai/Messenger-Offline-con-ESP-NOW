@@ -188,6 +188,7 @@ void setup() {
   }
   pinMode(BTN_UP, INPUT_PULLUP);
   pinMode(BTN_DOWN, INPUT_PULLUP);
+  pinMode(BTN_SUBMIT, INPUT_PULLUP);
   Wire.begin(21, 22);  // SDA, SCL
   display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
   display.setTextColor(SSD1306_WHITE);
