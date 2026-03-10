@@ -112,12 +112,9 @@ void loop() {
     display.clearDisplay();
     display.setTextSize(2);
     display.setCursor(20, 20);
-    for (int i = 0; i < 3; i++) {
-      display.print(".");
-      display.display();
-      delay(150);
-    }
+    delay(200);
     sendToPeer(menuSelected->opts[menuSelected->selected], espAddr);
+    us.push_back(menuSelected->opts[menuSelected->selected]);
     displayCurrMenu();
   }
 }
