@@ -91,7 +91,8 @@ void displayCurrMenu() {
     display.print(us.back());
   }
   display.println();
-  menuSelected->show(2 * lineHeight, fontSize);
+  display.println(menuSelected->title);
+  menuSelected->show(3 * lineHeight, fontSize);
 }
 
 void formatMacAddress(const uint8_t *macAddr, char *buffer, int maxLen) {
