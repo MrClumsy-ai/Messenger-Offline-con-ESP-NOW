@@ -13,6 +13,8 @@
 #define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
 
+uint8_t fontSize = 1;
+
 // const uint8_t espAddr[] = { 0x88, 0x57, 0x21, 0x79, 0xC1, 0x3C };  // placa 1
 const uint8_t espAddr[] = { 0x88, 0x57, 0x21, 0x79, 0x81, 0x04 };  // placa 2
 
@@ -33,14 +35,13 @@ struct MenuOption {
   MenuOption(const char *title, Menu *menu) : title(title), isDir(true), subDir(menu) {}
 };
 
-
 struct Menu {
   const char *title;
   int selected;
   const Menu *parent;
   const int optsLen;
   const MenuOption *opts;
-  void show(uint8_t padTop = 0, uint8_t fontSize = 1) {
+  void show(uint8_t padTop = 0) {
     display.setTextSize(fontSize);
     display.setCursor(0, selected * 10 * fontSize + padTop);
     display.println(">");
@@ -113,7 +114,7 @@ void displayCurrMenu() {
   }
   display.println();
   display.println(menuSelected->title);
-  menuSelected->show(3 * lineHeight, fontSize);
+  menuSelected->show(3 * lineHeight);
 }
 
 void formatMacAddress(const uint8_t *macAddr, char *buffer, int maxLen) {
@@ -212,7 +213,7 @@ void setup() {
   display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
   display.setTextColor(SSD1306_WHITE);
   display.setRotation(2);
-  display.setTextSize(1);  // default
+  display.setTextSize(fontSize);  // default
   displayCurrMenu();
 }
 
@@ -233,19 +234,15 @@ void loop() {
   }
   if (digitalRead(BTN_SUBMIT) == LOW) {
     if (menuSelected->opts->isDir) {
-      // menuSelected = menuSelected->opts->subDir;
       menuSelected = menuSelected->opts[menuSelected->selected].subDir;
       displayCurrMenu();
       delay(200);
     } else {
-      display.clearDisplay();
-      display.setTextSize(2);
-      display.setCursor(20, 20);
-      delay(200);
       sendToPeer(menuSelected->opts[menuSelected->selected].title, espAddr);
       us.push_back(menuSelected->opts[menuSelected->selected].title);
       menuSelected = &mainMenu;
       displayCurrMenu();
+      delay(200);
     }
   }
 }
