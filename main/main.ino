@@ -18,8 +18,11 @@ Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
 uint8_t menu_selected = 0;
 bool submit_pressed = false;
 
-const uint8_t espAddr[] = { 0x88, 0x57, 0x21, 0x79, 0xC1, 0x3C };  // placa 1
-// const uint8_t espAddr[] = { 0x88, 0x57, 0x21, 0x79, 0x81, 0x04 };  // placa 2
+std::vector<String> them;
+std::vector<String> us;
+
+// const uint8_t espAddr[] = { 0x88, 0x57, 0x21, 0x79, 0xC1, 0x3C };  // placa 1
+const uint8_t espAddr[] = { 0x88, 0x57, 0x21, 0x79, 0x81, 0x04 };  // placa 2
 
 void formatMacAddress(const uint8_t *macAddr, char *buffer, int maxLen) {
   snprintf(buffer, maxLen, "%02x:%02x:%02x:%02x:%02x:%02x", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
@@ -35,6 +38,7 @@ void recieveCallback(const esp_now_recv_info_t *esp_now_info, const uint8_t *dat
   char macStr[18];
   formatMacAddress(macAddr, macStr, 18);
   Serial.printf("Received message from: %s - %s\n", macStr, buffer);
+  them.push_back(String(buffer));
   display.clearDisplay();
   display.setCursor(10, 20);
   if (strcmp("a", buffer) == 0) {
@@ -102,29 +106,57 @@ void sendToPeer(const String &message, const uint8_t *peerAddress) {
   }
 }
 
+void setMenu(const String opts[], uint8_t paddingTop, uint8_t fontSize) {
+  display.setTextSize(fontSize);
+  for (int i = 0; i < sizeof(&opts) - 1; i++) {
+    display.setCursor(10, i * fontSize * 10 + paddingTop);
+    display.println(opts[i]);
+  }
+}
+
 void displayMainMenu() {
-  const int line_height = 20;
+  const uint8_t fontSize = 1;
+  const uint8_t paddingLeft = 10;
+  const uint8_t paddingTop = 10;
+  const uint8_t lineHeight = fontSize * 10;
+  display.setTextSize(fontSize);
   display.clearDisplay();
-  display.setTextSize(2);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(20, 0);
-  display.println("a");
-  display.setCursor(20, 20);
-  display.println("b");
-  display.setCursor(20, 40);
-  display.println("c");
-  display.setCursor(0, 20 * menu_selected);
+  // history
+  display.setCursor(paddingLeft, 0 * lineHeight);
+  display.print("them: ");
+  if (!them.empty()) {
+    display.print(them.back());
+  } 
+  display.println();
+  display.setCursor(paddingLeft, 1 * lineHeight);
+  display.print("us: ");
+  if (!us.empty()) {
+    display.print(us.back());
+  } 
+  display.println();
+  // menus
+  const String opts[] = { "a", "b", "c" };
+  setMenu(opts, 2*lineHeight, fontSize);
+  // cursor
+  // lineHeight * 2 bc there are 2 options before the menu
+  display.setCursor(0, lineHeight * menu_selected + lineHeight * 2);
   display.println(">");
   display.display();
+  for (int i = 0; i < us.size(); i++) {
+    Serial.print(us[i]);
+  }
 }
 
 String getMainSelected() {
   switch (menu_selected) {
     case 0:
+      us.push_back("a");
       return "a";
     case 1:
+      us.push_back("b");
       return "b";
     case 2:
+      us.push_back("c");
       return "c";
   }
 }
@@ -149,19 +181,10 @@ void setup() {
   pinMode(BTN_DOWN, INPUT_PULLUP);
   Wire.begin(21, 22);  // SDA, SCL
   display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
-  display.setRotation(2);
-  display.clearDisplay();
-  display.setTextSize(2);
   display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(">");
-  display.setCursor(20, 0);
-  display.println("a");
-  display.setCursor(20, 20);
-  display.println("b");
-  display.setCursor(20, 40);
-  display.println("c");
-  display.display();
+  display.setRotation(2);
+  display.setTextSize(1);  // default
+  displayMainMenu();
 }
 
 void loop() {
@@ -182,12 +205,21 @@ void loop() {
   if (digitalRead(BTN_SUBMIT) == LOW) {
     display.clearDisplay();
     display.setTextSize(2);
-    display.setTextColor(SSD1306_WHITE);
     display.setCursor(20, 20);
-    display.print("sent: ");
-    display.print(getMainSelected());
+    display.clearDisplay();
+    display.print(".");
     display.display();
-    delay(1500);
+    delay(250);
+    display.setCursor(20, 20);
+    display.clearDisplay();
+    display.print("..");
+    display.display();
+    delay(250);
+    display.setCursor(20, 20);
+    display.clearDisplay();
+    display.print("...");
+    display.display();
+    delay(250);
     sendToPeer(getMainSelected(), espAddr);
     displayMainMenu();
   }
