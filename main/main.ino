@@ -214,21 +214,17 @@ void loop() {
   }
   if (digitalRead(BTN_SUBMIT) == LOW) {
     display.clearDisplay();
-
-    display.clearDisplay();
+    display.setTextSize(2);
+    display.setCursor(20, 20);
     display.print(".");
     display.display();
-    delay(250);
-    display.setCursor(20, 20);
-    display.clearDisplay();
-    display.print("..");
+    delay(200);
+    display.print(".");
     display.display();
-    delay(250);
-    display.setCursor(20, 20);
-    display.clearDisplay();
-    display.print("...");
+    delay(200);
+    display.print(".");
     display.display();
-    delay(250);
+    delay(200);
     sendToPeer(menuSelected->opts[menuSelected->selected], espAddr);
     displayCurrMenu();
   }
