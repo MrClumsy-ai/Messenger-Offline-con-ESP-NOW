@@ -21,26 +21,19 @@ bool submit_pressed = false;
 
 struct Menu;
 
-union MenuOption {
-  const char *command;
-  const Menu *subDir;
+struct MenuOption {
+  const bool isDir;
+  union {
+    const char *command;
+    const Menu *subDir;
+  };
+  MenuOption(const char *cmd) : isDir(false), command(cmd) {}
+  MenuOption(const Menu *menu) : isDir(true), subDir(menu) {}
 };
 
-MenuOption newCmd(const char *cmd) {
-  MenuOption opt;
-  opt.command = cmd;
-  return opt;
-}
-
-MenuOption newDir(const Menu *menu) {
-  MenuOption opt;
-  opt.subDir = menu;
-  return opt;
-}
 
 struct Menu {
   int selected;
-  const bool isDir;
   const int optsLen;
   const char *const *opts;
   const MenuOption *data;
@@ -54,15 +47,23 @@ struct Menu {
     }
     display.display();
   }
+  bool isDir(int idx) const {
+    return data[idx].isDir;
+  }
+  const char *getCmd(int idx) const {
+    return data[idx].command;
+  }
+  const Menu *getSubDir(int idx) const {
+    return data[idx].subDir;
+  }
 };
 
+extern Menu ledMenu;
+extern Menu settingsMenu;
+
 const char *mainMenuOpts[] = { "a", "b", "c" };
-MenuOption mainOptsData[] = {
-  newCmd("a"),
-  newCmd("b"),
-  newCmd("c"),
-};
-Menu mainMenu = { 0, false, 3, mainMenuOpts, mainOptsData };
+MenuOption mainOptsData[] = { MenuOption("a"), MenuOption(&ledMenu), MenuOption(&settingsMenu) };
+Menu mainMenu = { 0, 3, mainMenuOpts, mainOptsData };
 
 Menu *menuSelected = &mainMenu;
 
