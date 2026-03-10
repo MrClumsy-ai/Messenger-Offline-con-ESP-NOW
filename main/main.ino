@@ -59,9 +59,9 @@ extern Menu settingsMenu;
 extern Menu emoticonsMenu;
 
 MenuOption mainOpts[] = {
-  MenuOption("emoticons", &emoticonsMenu),
   MenuOption("led", &ledMenu),
-  MenuOption("settings", &settingsMenu)
+  MenuOption("settings", &settingsMenu),
+  MenuOption("emoticons", &emoticonsMenu)
 };
 Menu mainMenu("Main menu", nullptr, sizeof(mainOpts) / sizeof(MenuOption), mainOpts);
 
@@ -233,16 +233,19 @@ void loop() {
   }
   if (digitalRead(BTN_SUBMIT) == LOW) {
     if (menuSelected->opts->isDir) {
-      menuSelected = menuSelected->opts->subDir;
+      // menuSelected = menuSelected->opts->subDir;
+      menuSelected = menuSelected->opts[menuSelected->selected].subDir;
+      displayCurrMenu();
+      delay(200);
     } else {
-      // TODO
+      display.clearDisplay();
+      display.setTextSize(2);
+      display.setCursor(20, 20);
+      delay(200);
+      sendToPeer(menuSelected->opts[menuSelected->selected].title, espAddr);
+      us.push_back(menuSelected->opts[menuSelected->selected].title);
+      menuSelected = &mainMenu;
+      displayCurrMenu();
     }
-    display.clearDisplay();
-    display.setTextSize(2);
-    display.setCursor(20, 20);
-    delay(200);
-    sendToPeer(menuSelected->opts[menuSelected->selected].title, espAddr);
-    us.push_back(menuSelected->opts[menuSelected->selected].title);
-    displayCurrMenu();
   }
 }
