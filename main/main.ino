@@ -56,15 +56,37 @@ struct Menu {
 
 extern const Menu ledMenu;
 extern const Menu settingsMenu;
+extern const Menu emoticonsMenu;
 
-MenuOption mainOpts[] = { MenuOption("a"), MenuOption("led", &ledMenu), MenuOption("settings", &settingsMenu) };
-Menu mainMenu("Main menu", nullptr, 3, mainOpts);
+MenuOption mainOpts[] = {
+  MenuOption("emoticons", &emoticonsMenu),
+  MenuOption("led", &ledMenu),
+  MenuOption("settings", &settingsMenu)
+};
+Menu mainMenu("Main menu", nullptr, sizeof(mainOpts) / sizeof(MenuOption), mainOpts);
 
-MenuOption ledOpts[] = { MenuOption("1"), MenuOption("2"), MenuOption("3") };
-const Menu ledMenu("Led menu", &mainMenu, 3, ledOpts);
+MenuOption emoticonsOpts[] = {
+  MenuOption(":)"),
+  MenuOption(":("),
+  MenuOption(":O"),
+  MenuOption(":/"),
+  MenuOption(":p"),
+};
+const Menu emoticonsMenu("Emoticons", &mainMenu, sizeof(emoticonsOpts) / sizeof(MenuOption), emoticonsOpts);
 
-MenuOption settingsOpts[] = { MenuOption("a"), MenuOption("b"), MenuOption("c") };
-const Menu settingsMenu("Led menu", &mainMenu, 3, settingsOpts);
+MenuOption ledOpts[] = {
+  MenuOption("1"),
+  MenuOption("2"),
+  MenuOption("3")
+};
+const Menu ledMenu("Led menu", &mainMenu, sizeof(ledOpts) / sizeof(MenuOption), ledOpts);
+
+MenuOption settingsOpts[] = {
+  MenuOption("a"),
+  MenuOption("b"),
+  MenuOption("c")
+};
+const Menu settingsMenu("Led menu", &mainMenu, sizeof(settingsOpts) / sizeof(MenuOption), settingsOpts);
 
 Menu *menuSelected = &mainMenu;
 
@@ -78,13 +100,13 @@ void displayCurrMenu() {
   display.setTextSize(fontSize);
   display.clearDisplay();
   // history
-  display.setCursor(paddingLeft, 0 * lineHeight);
+  display.setCursor(0, 0 * lineHeight);
   display.print("them: ");
   if (!them.empty()) {
     display.print(them.back());
   }
   display.println();
-  display.setCursor(paddingLeft, 1 * lineHeight);
+  display.setCursor(0, 1 * lineHeight);
   display.print("us: ");
   if (!us.empty()) {
     display.print(us.back());
