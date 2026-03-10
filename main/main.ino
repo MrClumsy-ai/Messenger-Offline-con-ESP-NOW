@@ -13,109 +13,15 @@
 #define OLED_RESET -1
 #define SCREEN_ADDRESS 0x3C
 
-uint8_t fontSize = 1;
-
 // const uint8_t espAddr[] = { 0x88, 0x57, 0x21, 0x79, 0xC1, 0x3C };  // placa 1
 const uint8_t espAddr[] = { 0x88, 0x57, 0x21, 0x79, 0x81, 0x04 };  // placa 2
 
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
-bool submit_pressed = false;
-
-struct Menu;
-
-struct MenuOption {
-  const char *title;
-  const bool isDir;
-  union {
-    const char *command;
-    Menu *subDir;
-  };
-  // puede ser o un cmd, o un dir (con titulo)
-  MenuOption(const char *cmd) : title(cmd), isDir(false), command(cmd) {}
-  MenuOption(const char *title, Menu *menu) : title(title), isDir(true), subDir(menu) {}
-};
-
-struct Menu {
-  const char *title;
-  int selected;
-  const Menu *parent;
-  const int optsLen;
-  const MenuOption *opts;
-  void show(uint8_t padTop = 0) {
-    display.setTextSize(fontSize);
-    display.setCursor(0, selected * 10 * fontSize + padTop);
-    display.println(">");
-    for (int i = 0; i < optsLen; i++) {
-      display.setCursor(10, i * fontSize * 10 + padTop);
-      display.println(opts[i].title);
-    }
-    display.display();
-  }
-  Menu(const char *title, const Menu *parent, const int optsLen, const MenuOption *opts)
-    : title(title), selected(0), parent(parent), optsLen(optsLen), opts(opts) {}
-};
-
-extern Menu ledMenu;
-extern Menu settingsMenu;
-extern Menu emoticonsMenu;
-
-MenuOption mainOpts[] = {
-  MenuOption("led", &ledMenu),
-  MenuOption("settings", &settingsMenu),
-  MenuOption("emoticons", &emoticonsMenu)
-};
-Menu mainMenu("Main menu", nullptr, sizeof(mainOpts) / sizeof(MenuOption), mainOpts);
-
-MenuOption emoticonsOpts[] = {
-  MenuOption(":)"),
-  MenuOption(":("),
-  MenuOption(":O"),
-  MenuOption(":/"),
-  MenuOption(":p"),
-};
-Menu emoticonsMenu("Emoticons", &mainMenu, sizeof(emoticonsOpts) / sizeof(MenuOption), emoticonsOpts);
-
-MenuOption ledOpts[] = {
-  MenuOption("1"),
-  MenuOption("2"),
-  MenuOption("3")
-};
-Menu ledMenu("Led menu", &mainMenu, sizeof(ledOpts) / sizeof(MenuOption), ledOpts);
-
-MenuOption settingsOpts[] = {
-  MenuOption("a"),
-  MenuOption("b"),
-  MenuOption("c")
-};
-Menu settingsMenu("Led menu", &mainMenu, sizeof(settingsOpts) / sizeof(MenuOption), settingsOpts);
-
-Menu *menuSelected = &mainMenu;
-
+uint8_t fontSize = 1;
 std::vector<String> them;
 std::vector<String> us;
 
-void displayCurrMenu() {
-  const uint8_t fontSize = 1;
-  const uint8_t paddingLeft = 10;
-  const uint8_t lineHeight = fontSize * 10;
-  display.setTextSize(fontSize);
-  display.clearDisplay();
-  // history
-  display.setCursor(0, 0 * lineHeight);
-  display.print("them: ");
-  if (!them.empty()) {
-    display.print(them.back());
-  }
-  display.println();
-  display.setCursor(0, 1 * lineHeight);
-  display.print("us: ");
-  if (!us.empty()) {
-    display.print(us.back());
-  }
-  display.println();
-  display.println(menuSelected->title);
-  menuSelected->show(3 * lineHeight);
-}
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);
+bool submit_pressed = false;
 
 void formatMacAddress(const uint8_t *macAddr, char *buffer, int maxLen) {
   snprintf(buffer, maxLen, "%02x:%02x:%02x:%02x:%02x:%02x", macAddr[0], macAddr[1], macAddr[2], macAddr[3], macAddr[4], macAddr[5]);
@@ -190,6 +96,107 @@ void sendToPeer(const String &message, const uint8_t *peerAddress) {
   }
 }
 
+struct Menu;
+
+struct MenuOption {
+  const char *title;
+  const bool isDir;
+  union {
+    // make command and args doable together
+    struct {
+      const char *command;
+      const char *args;
+    } cmd;
+    Menu *subDir;
+  };
+  void execute() const {
+    if (strcmp("send", this->cmd.command) == 0) {
+      sendToPeer(this->cmd.args, espAddr);
+    } else if (strcmp("font", this->cmd.command) == 0) {
+      fontSize = atoi(this->cmd.args);
+      display.setTextSize(fontSize);
+    } else if (strcmp("back", this->cmd.command) == 0) {
+      // current dir -> dir of parent
+    }
+  }
+  // puede ser o un cmd, o un dir (con titulo)
+  MenuOption(const char *cmd, const char *args = nullptr) : title(args), isDir(false) {
+    this->cmd.command = cmd;
+    this->cmd.args = args;
+  }
+  MenuOption(const char *title, Menu *menu) : title(title), isDir(true), subDir(menu) {}
+};
+
+struct Menu {
+  const char *title;
+  int selected;
+  const Menu *parent;
+  const int optsLen;
+  const MenuOption *opts;
+  void show(uint8_t padTop = 0) {
+    display.setTextSize(fontSize);
+    display.setCursor(0, selected * 10 * fontSize + padTop);
+    display.println(">");
+    for (int i = 0; i < optsLen; i++) {
+      display.setCursor(10, i * fontSize * 10 + padTop);
+      display.println(opts[i].title);
+    }
+    display.display();
+  }
+  Menu(const char *title, const Menu *parent, const int optsLen, const MenuOption *opts)
+    : title(title), selected(0), parent(parent), optsLen(optsLen), opts(opts) {}
+};
+
+extern Menu settingsMenu;
+extern Menu emoticonsMenu;
+
+MenuOption mainOpts[] = {
+  MenuOption("settings", &settingsMenu),
+  MenuOption("emoticons", &emoticonsMenu)
+};
+Menu mainMenu("Main menu", nullptr, sizeof(mainOpts) / sizeof(MenuOption), mainOpts);
+
+MenuOption emoticonsOpts[] = {
+  MenuOption("send", ":)"),
+  MenuOption("send", ":("),
+  MenuOption("send", ":O"),
+  MenuOption("send", ":/"),
+  MenuOption("send", ":p"),
+};
+Menu emoticonsMenu("Emoticons", &mainMenu, sizeof(emoticonsOpts) / sizeof(MenuOption), emoticonsOpts);
+
+MenuOption settingsOpts[] = {
+  MenuOption("font", "1"),
+  MenuOption("font", "2"),
+  MenuOption("font", "3"),
+};
+Menu settingsMenu("Led menu", &mainMenu, sizeof(settingsOpts) / sizeof(MenuOption), settingsOpts);
+
+Menu *menuSelected = &mainMenu;
+
+void displayCurrMenu() {
+  const uint8_t paddingLeft = 10 * fontSize;
+  const uint8_t lineHeight = 10 * fontSize;
+  display.setTextSize(fontSize);
+  display.clearDisplay();
+  // history
+  display.setCursor(0, 0 * lineHeight);
+  display.print("them: ");
+  if (!them.empty()) {
+    display.print(them.back());
+  }
+  display.println();
+  display.setCursor(0, 1 * lineHeight);
+  display.print("us: ");
+  if (!us.empty()) {
+    display.print(us.back());
+  }
+  display.println();
+  display.println(menuSelected->title);
+  menuSelected->show(3 * lineHeight);
+}
+
+
 void setup() {
   Serial.begin(115200);
   delay(1000);
@@ -236,13 +243,12 @@ void loop() {
     if (menuSelected->opts->isDir) {
       menuSelected = menuSelected->opts[menuSelected->selected].subDir;
       displayCurrMenu();
-      delay(200);
     } else {
-      sendToPeer(menuSelected->opts[menuSelected->selected].title, espAddr);
+      menuSelected->opts[menuSelected->selected].execute();
       us.push_back(menuSelected->opts[menuSelected->selected].title);
       menuSelected = &mainMenu;
       displayCurrMenu();
-      delay(200);
     }
+    delay(200);
   }
 }
