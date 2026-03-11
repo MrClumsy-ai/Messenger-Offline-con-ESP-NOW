@@ -135,13 +135,16 @@ struct Menu {
   const MenuOption *opts;
   void show(uint8_t padTop = 0) {
     display.setTextSize(fontSize);
-    display.setCursor(0, selected * 10 * fontSize + padTop);
-    display.println(">");
-    for (int i = 0; i < optsLen; i++) {
-      display.setCursor(10, i * fontSize * 10 + padTop);
+    // displays 3, then scrolls
+    for (int i = 3 * (this->selected / 3); i < (3 * (this->selected / 3)) + 3; i++) {
+      if (i >= this->optsLen) { break; }
+      Serial.printf("cursor coords: %d %d\n", 10, i % 3 * fontSize * 10 + padTop);
+      display.setCursor(10, i % 3 * fontSize * 10 + padTop);
       display.println(opts[i].title);
+      if (this->selected % 3 + 1 == 0) { break; }
     }
-    display.display();
+    display.setCursor(0, this->selected % 3 * 10 * fontSize + padTop);
+    display.println(">");
   }
   Menu(const char *title, const Menu *parent, const int optsLen, const MenuOption *opts)
     : title(title), selected(0), parent(parent), optsLen(optsLen), opts(opts) {}
@@ -177,23 +180,20 @@ Menu *menuSelected = &mainMenu;
 void displayCurrMenu() {
   const uint8_t paddingLeft = 10 * fontSize;
   const uint8_t lineHeight = 10 * fontSize;
-  display.setTextSize(fontSize);
   display.clearDisplay();
+  display.setTextSize(fontSize);
   // history
   display.setCursor(0, 0 * lineHeight);
   display.print("them: ");
-  if (!them.empty()) {
-    display.print(them.back());
-  }
+  if (!them.empty()) { display.print(them.back()); }
   display.println();
   display.setCursor(0, 1 * lineHeight);
   display.print("us: ");
-  if (!us.empty()) {
-    display.print(us.back());
-  }
+  if (!us.empty()) { display.print(us.back()); }
   display.println();
   display.println(menuSelected->title);
   menuSelected->show(3 * lineHeight);
+  display.display();
 }
 
 
