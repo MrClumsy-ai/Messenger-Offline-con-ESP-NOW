@@ -17,6 +17,8 @@
 const uint8_t espAddr[] = { 0x88, 0x57, 0x21, 0x79, 0x81, 0x04 };  // placa 2
 
 uint8_t fontSize = 1;
+
+std::vector<std::array<String, 2>> history;
 std::vector<String> them;
 std::vector<String> us;
 
@@ -37,6 +39,7 @@ void recieveCallback(const esp_now_recv_info_t *esp_now_info, const uint8_t *dat
   char macStr[18];
   formatMacAddress(macAddr, macStr, 18);
   Serial.printf("Received message from: %s - %s\n", macStr, buffer);
+  history.push_back({"them", String(buffer)});
   them.push_back(String(buffer));
   display.clearDisplay();
   display.setTextSize(2);
@@ -113,12 +116,40 @@ struct MenuOption {
   };
   void execute() const {
     if (strcmp("send", this->cmd.command) == 0) {
+      history.push_back({ "us", this->cmd.args });
+      us.push_back(this->cmd.args);
       sendToPeer(this->cmd.args, espAddr);
     } else if (strcmp("font", this->cmd.command) == 0) {
       fontSize = atoi(this->cmd.args);
       display.setTextSize(fontSize);
     } else if (strcmp("back", this->cmd.command) == 0) {
       // current dir -> dir of parent
+    } else if (strcmp("hist", this->cmd.command) == 0) {
+      // display history
+      display.clearDisplay();
+      display.setCursor(0, 0);
+      display.print(this->cmd.args);
+      display.println(" history");
+      if (strcmp("Us", this->cmd.args) == 0) {
+        for (int i = us.size() - 1; i >= 0; i--) {
+          display.printf("(%d): ", i);
+          display.println(us[i]);
+        }
+      } else if (strcmp("Them", this->cmd.args) == 0) {
+        for (int i = them.size() - 1; i >= 0; i--) {
+          display.printf("(%d): ", i);
+          display.println(them[i]);
+        }
+      } else if (strcmp("General", this->cmd.args) == 0) {
+        for (int i = history.size() - 1; i >= 0; i--) {
+          display.printf("(%d) ", i);
+          display.print(history[i][0]);
+          display.printf(": ");
+          display.println(history[i][1]);
+        }
+      }
+      display.display();
+      delay(2500);
     }
   }
   // puede ser o un cmd, o un dir (con titulo)
@@ -152,12 +183,12 @@ struct Menu {
     : title(title), selected(0), parent(parent), optsLen(optsLen), opts(opts) {}
 };
 
-extern Menu settingsMenu;
 extern Menu emoticonsMenu;
+extern Menu historyMenu;
 
 MenuOption mainOpts[] = {
-  MenuOption("settings", &settingsMenu),
-  MenuOption("emoticons", &emoticonsMenu)
+  MenuOption("Emoticons", &emoticonsMenu),
+  MenuOption("History", &historyMenu),
 };
 Menu mainMenu("Main menu", nullptr, sizeof(mainOpts) / sizeof(MenuOption), mainOpts);
 
@@ -170,12 +201,12 @@ MenuOption emoticonsOpts[] = {
 };
 Menu emoticonsMenu("Emoticons", &mainMenu, sizeof(emoticonsOpts) / sizeof(MenuOption), emoticonsOpts);
 
-MenuOption settingsOpts[] = {
-  MenuOption("font", "1"),
-  MenuOption("font", "2"),
-  MenuOption("font", "3"),
+MenuOption historyOpts[] = {
+  MenuOption("hist", "Us"),
+  MenuOption("hist", "Them"),
+  MenuOption("hist", "General"),
 };
-Menu settingsMenu("Led menu", &mainMenu, sizeof(settingsOpts) / sizeof(MenuOption), settingsOpts);
+Menu historyMenu("History", &mainMenu, sizeof(historyOpts) / sizeof(MenuOption), historyOpts);
 
 Menu *menuSelected = &mainMenu;
 
@@ -247,7 +278,6 @@ void loop() {
       displayCurrMenu();
     } else {
       menuSelected->opts[menuSelected->selected].execute();
-      us.push_back(menuSelected->opts[menuSelected->selected].title);
       menuSelected = &mainMenu;
       displayCurrMenu();
     }
