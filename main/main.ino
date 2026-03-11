@@ -171,7 +171,6 @@ struct Menu {
     // displays 3, then scrolls
     for (int i = 3 * (this->selected / 3); i < (3 * (this->selected / 3)) + 3; i++) {
       if (i >= this->optsLen) { break; }
-      Serial.printf("cursor coords: %d %d\n", 10, i % 3 * fontSize * 10 + padTop);
       display.setCursor(10, i % 3 * fontSize * 10 + padTop);
       display.println(opts[i].title);
       if (this->selected % 3 + 1 == 0) { break; }
