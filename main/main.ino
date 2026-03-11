@@ -39,7 +39,9 @@ void recieveCallback(const esp_now_recv_info_t *esp_now_info, const uint8_t *dat
   Serial.printf("Received message from: %s - %s\n", macStr, buffer);
   them.push_back(String(buffer));
   display.clearDisplay();
-  display.setCursor(10, 20);
+  display.setTextSize(2);
+  display.setCursor(0, 0);
+  display.println("(!)");
   display.println(them.back());
   display.display();
   delay(1000);  // prevent multiple triggers
