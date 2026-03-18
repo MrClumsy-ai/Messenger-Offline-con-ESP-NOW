@@ -251,7 +251,7 @@ void setup() {
   Wire.begin(21, 22);  // SDA, SCL
   display.begin(SSD1306_SWITCHCAPVCC, SCREEN_ADDRESS);
   display.setTextColor(SSD1306_WHITE);
-  display.setRotation(2);
+  // display.setRotation(2);
   display.setTextSize(fontSize);  // default
   displayCurrMenu();
 }
