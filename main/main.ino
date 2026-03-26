@@ -184,12 +184,20 @@ struct Menu {
 
 extern Menu emoticonsMenu;
 extern Menu historyMenu;
+extern Menu quickMsg;
 
 MenuOption mainOpts[] = {
+  MenuOption("Quick Msg", &quickMsg),
   MenuOption("Emoticons", &emoticonsMenu),
   MenuOption("History", &historyMenu),
 };
 Menu mainMenu("Main menu", nullptr, sizeof(mainOpts) / sizeof(MenuOption), mainOpts);
+
+MenuOption quickMsgOpts[] = {
+  MenuOption("send", "foo"),
+  MenuOption("send", "bar"),
+};
+Menu quickMsg("Emoticons", &mainMenu, sizeof(quickMsgOpts) / sizeof(MenuOption), quickMsgOpts);
 
 MenuOption emoticonsOpts[] = {
   MenuOption("send", ":)"),
