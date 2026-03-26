@@ -4,21 +4,21 @@ Un sistema de comunicacion tipo "walkie-talkie" de texto entre varios ESP32
 que funciona sin necesidad de router ni internet, con un alcance de hasta
 200-400 metros.
 
-# Diagrama esquematico
+## Diagrama esquematico
 
 ![diagrama](./media/diagrama.png)
 
-# Uso
+## Uso
 
 - Boton rojo (boton 1): mueve el cursor hacia arriba
 - Boton verde (boton 2): mueve el cursor hacia abajo
 - Boton azul (boton 3): envia la opcion del menu
 
-# Requerimientos
+## Requerimientos
 
 Este proyecto es funcional en linux (Debian 13)
 
-## Materiales
+### Materiales
 
 - 2 x ESP-32 (de 38 pines) (utilizados en el desarrollo: [UNIT ELECTRONICS ESP32 38 Pines ESP WROOM 32](https://www.amazon.com.mx/dp/B08V517B56?ref=ppx_yo2ov_dt_b_fed_asin_title) )
 - 2 x I2C OLED displays (utilizados en el desarrollo: [UNIT ELECTRONICS Display OLED Blanco 128x64 0.96 I2C SSD1306](https://www.amazon.com.mx/dp/B09MSV1BYF?ref=ppx_yo2ov_dt_b_fed_asin_title) )
@@ -26,7 +26,7 @@ Este proyecto es funcional en linux (Debian 13)
 - ? x Push-buttons
 - Cables jumper
 
-## Arduino en la linea de comandos
+### Arduino en la linea de comandos
 
 1. Instalar arduino junto con arduino-cli
 
