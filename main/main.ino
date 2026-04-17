@@ -39,7 +39,7 @@ void recieveCallback(const esp_now_recv_info_t *esp_now_info, const uint8_t *dat
   char macStr[18];
   formatMacAddress(macAddr, macStr, 18);
   Serial.printf("Received message from: %s - %s\n", macStr, buffer);
-  history.push_back({"them", String(buffer)});
+  history.push_back({ "them", String(buffer) });
   them.push_back(String(buffer));
   display.clearDisplay();
   display.setTextSize(2);
@@ -51,6 +51,8 @@ void recieveCallback(const esp_now_recv_info_t *esp_now_info, const uint8_t *dat
   displayCurrMenu();
 }
 
+bool deliveredGood;
+
 void sentCallback(const esp_now_send_info_t *tx_info, esp_now_send_status_t status) {
   // Extract MAC address from the new structure
   const uint8_t *macAddr = tx_info->des_addr;  // des_addr is the destination MAC
@@ -58,8 +60,13 @@ void sentCallback(const esp_now_send_info_t *tx_info, esp_now_send_status_t stat
   formatMacAddress(macAddr, macStr, 18);
   Serial.print("Last packet sent to: ");
   Serial.println(macStr);
-  Serial.print("Last packet send status: ");
-  Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Delivery Success" : "Delivery Fail");
+  if (status == ESP_NOW_SEND_SUCCESS) {
+    deliveredGood = true;
+    Serial.println("delivery success");
+  } else {
+    deliveredGood = false;
+    Serial.println("delivery fail");
+  }
 }
 
 void sendToPeer(const String &message, const uint8_t *peerAddress) {
@@ -116,9 +123,20 @@ struct MenuOption {
   };
   void execute() const {
     if (strcmp("send", this->cmd.command) == 0) {
-      history.push_back({ "us", this->cmd.args });
-      us.push_back(this->cmd.args);
       sendToPeer(this->cmd.args, espAddr);
+      display.clearDisplay();
+      display.setTextSize(2);
+      display.setCursor(0, 0);
+      if (deliveredGood) {
+        display.printf("delivery\nsuccess");
+        history.push_back({ "us", this->cmd.args });
+        us.push_back(this->cmd.args);
+        display.display();
+      } else {
+        display.printf("delivery\nfail");
+        display.display();
+      }
+      delay(1000);
     } else if (strcmp("font", this->cmd.command) == 0) {
       fontSize = atoi(this->cmd.args);
       display.setTextSize(fontSize);
