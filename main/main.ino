@@ -1,4 +1,3 @@
-// ayuda con deepseek
 #include <Wire.h>
 #include <esp_now.h>
 #include <WiFi.h>
@@ -212,8 +211,10 @@ MenuOption mainOpts[] = {
 Menu mainMenu("Main menu", nullptr, sizeof(mainOpts) / sizeof(MenuOption), mainOpts);
 
 MenuOption quickMsgOpts[] = {
-  MenuOption("send", "foo"),
-  MenuOption("send", "bar"),
+  MenuOption("send", "hola"),
+  MenuOption("send", "adios"),
+  MenuOption("send", "ok?"),
+  MenuOption("send", "ok"),
 };
 Menu quickMsg("Emoticons", &mainMenu, sizeof(quickMsgOpts) / sizeof(MenuOption), quickMsgOpts);
 
